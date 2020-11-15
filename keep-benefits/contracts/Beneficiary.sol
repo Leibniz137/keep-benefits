@@ -10,6 +10,8 @@ import "openzeppelin/openzeppelin-contracts@3.2.2-solc-0.7/contracts/token/ERC20
 
 
 contract Beneficiary is Ownable {
+    event ReceivedEther(address, uint);
+
     /*
     Withdraw eth to the contract owner
     */
@@ -29,4 +31,15 @@ contract Beneficiary is Ownable {
 
         token.transfer(owner(), amount);
     }
+
+    /*
+    To make this contract able to receive ether
+
+    NOTE: solhint doesn't seem to understand the receive function w/out function keyword...
+    */
+    /* solhint-disable */
+    receive() external payable {
+        emit ReceivedEther(msg.sender, msg.value);
+    }
+    /* solhint-enable */
 }
