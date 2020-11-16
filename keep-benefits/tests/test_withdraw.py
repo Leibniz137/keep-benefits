@@ -14,6 +14,17 @@ def test_withdraw_eth(accounts, Beneficiary):
 
     assert deployer.balance() == starting_balance + "1 ether"
 
-#
-# def test_withdraw_erc20(Beneficiary):
-#     deployer = accounts[0]
+
+def test_withdraw_erc20(accounts, Beneficiary, Token):
+    beneficiary_deployer = accounts[0]
+    beneficiary = beneficiary_deployer.deploy(Beneficiary)
+
+    token_deployer = accounts[1]
+    initial_supply = 10
+    token = token_deployer.deploy(Token, initial_supply)
+
+    token.transfer(beneficiary, 5, {'from': token_deployer})
+
+    beneficiary.withdrawERC20(5, token)
+
+    assert token.balanceOf(beneficiary_deployer.address) == 5
