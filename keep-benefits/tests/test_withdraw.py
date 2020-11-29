@@ -3,7 +3,9 @@ def test_withdraw_eth(accounts, Beneficiary):
 
     starting_balance = deployer.balance()
 
-    beneficiary = deployer.deploy(Beneficiary)
+    beneficiary = Beneficiary.deploy(
+            '0xdF708431162Ba247dDaE362D2c919e0fbAfcf9DE',
+            {'from': deployer})
 
     accounts[1].transfer(beneficiary, "10 ether", gas_price=0)
 
@@ -17,7 +19,9 @@ def test_withdraw_eth(accounts, Beneficiary):
 
 def test_withdraw_erc20(accounts, Beneficiary, Token):
     beneficiary_deployer = accounts[0]
-    beneficiary = beneficiary_deployer.deploy(Beneficiary)
+    beneficiary = Beneficiary.deploy(
+        '0xdF708431162Ba247dDaE362D2c919e0fbAfcf9DE',
+        {'from': beneficiary_deployer})
 
     token_deployer = accounts[1]
     initial_supply = 10

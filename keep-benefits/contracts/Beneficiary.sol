@@ -7,10 +7,18 @@ pragma solidity 0.7.1;
 
 import "openzeppelin/openzeppelin-contracts@3.2.2-solc-0.7/contracts/access/Ownable.sol";
 import "openzeppelin/openzeppelin-contracts@3.2.2-solc-0.7/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/IKeepRandomBeaconOperator.sol";
 
 
 contract Beneficiary is Ownable {
+    IKeepRandomBeaconOperator private randomBeaconOperator;
+
     event ReceivedEther(address, uint);
+
+    // solhint-disable-next-line func-visibility
+    constructor(address randomBeaconOperatorAddress) {
+        randomBeaconOperator = IKeepRandomBeaconOperator(randomBeaconOperatorAddress);
+    }
 
     /*
     Withdraw eth to the contract owner
@@ -30,6 +38,12 @@ contract Beneficiary is Ownable {
         require(amount <= token.balanceOf(address(this)));
 
         token.transfer(owner(), amount);
+    }
+
+    function claimBeaconRewards(uint256[] calldata groupIndicies, address operator) external onlyOwner {
+        for (uint256 i = 0; i < groupIndicies.length; i++) {
+            randomBeaconOperator.withdrawGroupMemberRewards(operator, i);
+        }
     }
 
     /*
