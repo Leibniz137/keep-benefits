@@ -40,6 +40,9 @@ contract Beneficiary is Ownable {
         token.transfer(owner(), amount);
     }
 
+    /*
+    Claim beacon rewards in bulk for a given list of beacon groups
+    */
     function claimBeaconRewards(uint256[] calldata groupIndicies, address operator) external onlyOwner {
         for (uint256 i = 0; i < groupIndicies.length; i++) {
             randomBeaconOperator.withdrawGroupMemberRewards(operator, i);
