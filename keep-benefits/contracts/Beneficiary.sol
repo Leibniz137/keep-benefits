@@ -10,6 +10,9 @@ import "openzeppelin/openzeppelin-contracts@3.2.2-solc-0.7/contracts/token/ERC20
 import "../interfaces/IKeepRandomBeaconOperator.sol";
 
 
+/*
+Beneficiary's withdrawal methods only ever send eth to the owner.
+*/
 contract Beneficiary is Ownable {
     IKeepRandomBeaconOperator private randomBeaconOperator;
 
@@ -23,7 +26,7 @@ contract Beneficiary is Ownable {
     /*
     Withdraw eth to the contract owner
     */
-    function withdrawEth(uint amount) external onlyOwner {
+    function withdrawEth(uint amount) public {
         require(amount <= address(this).balance);
 
         // must use type "address payable", to send eth, not just "address"
@@ -34,7 +37,7 @@ contract Beneficiary is Ownable {
     /*
     Withdraw an arbitrary erc20 token to the contract owner
     */
-    function withdrawERC20(uint amount, IERC20 token) external onlyOwner {
+    function withdrawERC20(uint amount, IERC20 token) public {
         require(amount <= token.balanceOf(address(this)));
 
         token.transfer(owner(), amount);
@@ -43,7 +46,7 @@ contract Beneficiary is Ownable {
     /*
     Claim beacon rewards in bulk for a given list of beacon groups
     */
-    function claimBeaconRewards(uint256[] calldata groupIndicies, address operator) external onlyOwner {
+    function claimBeaconRewards(uint256[] calldata groupIndicies, address operator) public {
         for (uint256 i = 0; i < groupIndicies.length; i++) {
             randomBeaconOperator.withdrawGroupMemberRewards(operator, i);
         }
