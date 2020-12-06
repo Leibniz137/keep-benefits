@@ -5,7 +5,7 @@ from pprint import pprint
 
 from fabric.api import task
 from web3 import Web3
-
+from web3.gas_strategies.time_based import medium_gas_price_strategy
 
 KEEP_RANDOM_BEACON_OPERATOR_JSON_FILE = Path(__file__).parent / 'KeepRandomBeaconOperator.json'   # noqa: E501
 with KEEP_RANDOM_BEACON_OPERATOR_JSON_FILE.open() as fp:
@@ -23,6 +23,7 @@ DAPPNODE_HTTP_RPC_URL = 'http://fullnode.dappnode:8545/'
 HTTP_RPC_URL = os.environ.get('HTTP_RPC_URL', DAPPNODE_HTTP_RPC_URL)
 PROVIDER = Web3.HTTPProvider(HTTP_RPC_URL)
 W3 = Web3(PROVIDER)
+W3.eth.setGasPriceStrategy(medium_gas_price_strategy)
 
 
 KEEP_RANDOM_BEACON_OPERATOR_CONTRACT = W3.eth.contract(
@@ -35,7 +36,6 @@ KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_CONTRACT = W3.eth.contract(
     abi=KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_ABI,
     address=KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_ADDRESS
 )
-KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_CONTRACT_INIT_BLOCK = 10834116
 
 
 class Group:
@@ -64,44 +64,45 @@ class Group:
         return self.operator_functions.isStaleGroup(self.pub_key).call()
 
 
-@task
-def list_all_beacon_rewards(operator):
-    "operator_address -> [rewards]"
+def operator_groups(operator):
     events = KEEP_RANDOM_BEACON_OPERATOR_CONTRACT.events.DkgResultSubmittedEvent.getLogs(   # noqa: E501
         fromBlock=KEEP_RANDOM_BEACON_OPERATOR_CONTRACT_INIT_BLOCK
     )
 
     groups = {}
-    operator = Web3.toChecksumAddress(operator)
     for group_index, event in enumerate(events):
         group = Group(event.args.groupPubKey, group_index)
         if operator in group.members:
-            groups[group_index] = {
-                'pubkey': group.pub_key,
-                'rewards': group.rewards / 10**18,
-            }
+            groups[group_index] = group
+    return groups
+
+
+@task
+def list_all_beacon_rewards(operator):
+    "operator_address -> [rewards]"
+    operator = Web3.toChecksumAddress(operator)
+    groups = {}
+    for group_index, group in operator_groups(operator).items():
+        groups[group_index] = {
+            'pubkey': group.pub_key,
+            'rewards': group.rewards / 10**18,
+        }
     pprint(groups)
 
 
 @task
 def list_unclaimed_beacon_rewards(operator):
-    events = KEEP_RANDOM_BEACON_OPERATOR_CONTRACT.events.DkgResultSubmittedEvent.getLogs(   # noqa: E501
-        fromBlock=KEEP_RANDOM_BEACON_OPERATOR_CONTRACT_INIT_BLOCK
-    )
-
-    groups = {}
     operator = Web3.toChecksumAddress(operator)
-    for group_index, event in enumerate(events):
-        group = Group(event.args.groupPubKey, group_index)
-        if operator in group.members:
-            has_withdrawn = KEEP_RANDOM_BEACON_OPERATOR_CONTRACT.functions.hasWithdrawnRewards(   # noqa: E501
-                operator, group_index
-            ).call()
-            if group.stale and not has_withdrawn:
-                groups[group_index] = {
-                    'pubkey': group.pub_key,
-                    'rewards': group.rewards / 10**18,
-                }
+    groups = {}
+    for group_index, group in operator_groups(operator).items():
+        has_withdrawn = KEEP_RANDOM_BEACON_OPERATOR_CONTRACT.functions.hasWithdrawnRewards(   # noqa: E501
+            operator, group_index
+        ).call()
+        if group.stale and not has_withdrawn:
+            groups[group_index] = {
+                'pubkey': group.pub_key,
+                'rewards': group.rewards / 10**18,
+            }
     pprint(groups)
 
 
@@ -134,7 +135,7 @@ def load_benefits_contract():
         msg = "Error: Must have KEEP_BENEFITS_CONTRACT_ADDRESS environment variable set"   # noqa: E501
         raise RuntimeError(msg)
     # this was created when you initially compiled & deployed the contract
-    keep_benefits_json_file = Path(__file__).parent / 'keep-benefits/build/contracts.json'   # noqa: E501
+    keep_benefits_json_file = Path(__file__).parent / 'keep-benefits/build/contracts/Beneficiary.json'   # noqa: E501
     with keep_benefits_json_file.open() as fp:
         keep_benefits_abi = json.load(fp)['abi']
     contract = W3.eth.contract(
@@ -144,21 +145,33 @@ def load_benefits_contract():
     return contract
 
 
-# # TODO: make this *operator
-# @task
-# def claim_beacon_rewards(operator):
-#     "first find epochs with unclaimed rewards, then claim them in bulk"
-#     skey = load_private_key()
-#     benefits_contract = load_benefits_contract()
-#
-#     events = KEEP_RANDOM_BEACON_OPERATOR_CONTRACT.events.DkgResultSubmittedEvent.getLogs(   # noqa: E501
-#         fromBlock=KEEP_RANDOM_BEACON_OPERATOR_CONTRACT_INIT_BLOCK
-#     )
-#     groups = []
-#     operator = Web3.toChecksumAddress(operator)
-#     for event in events:
-#         group = Group(event.args.groupPubKey)
-#         if operator in group.members and group.unclaimed(operator):
-#             groups.append(group)
-#     # tODO: benefits_contract.claimBeaconRewards(group_indicies, operator)
-#     pprint(groups)
+# TODO: make this *operator
+@task
+def claim_beacon_rewards(operator):
+    "first find epochs with unclaimed rewards, then claim them in bulk"
+    skey = load_private_key()
+    account = W3.eth.account.from_key(skey)
+    benefits_contract = load_benefits_contract()
+    operator = Web3.toChecksumAddress(operator)
+
+    group_indicies = []
+    for group_index, group in operator_groups(operator).items():
+        has_withdrawn = KEEP_RANDOM_BEACON_OPERATOR_CONTRACT.functions.hasWithdrawnRewards(   # noqa: E501
+            operator, group_index
+        ).call()
+        if group.stale and not has_withdrawn:
+            group_indicies.append(group_index)
+    print(f'group indicies: {group_indicies}')
+    contract_call = benefits_contract.functions.claimBeaconRewards(group_indicies, operator)   # noqa: E501
+    gas_limit = contract_call.estimateGas()
+    gas_price = W3.eth.generateGasPrice()
+
+    tx = contract_call.buildTransaction({
+        'chainId': W3.eth.chainId,
+        'gas': gas_limit,
+        'gasPrice': gas_price,
+        'nonce': W3.eth.getTransactionCount(account.address)
+    })
+    signed_tx = W3.eth.account.sign_transaction(tx, account.key)
+    tx_hash = W3.eth.sendRawTransaction(signed_tx.rawTransaction)
+    print(tx_hash)
