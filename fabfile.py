@@ -49,6 +49,11 @@ ECDSA_REWARDS_DISTRIBUTOR_CONTRACT = W3.eth.contract(
     address=ECDSA_REWARDS_DISTRIBUTOR_ADDRESS
 )
 
+# see: https://github.com/keep-network/keep-core/blob/master/solidity/dashboard/src/rewards-allocation/rewards.json   # noqa: E501
+REWARDS_DATA_PATH = Path(__file__).parent / 'artifacts/rewards-data.json'
+with REWARDS_DATA_PATH.open() as fp:
+    REWARDS_DATA = json.load(fp)
+
 
 class Group:
     def __init__(self, group_pub_key, group_index=None):
@@ -187,3 +192,26 @@ def claim_beacon_rewards(operator):
     signed_tx = W3.eth.account.sign_transaction(tx, account.key)
     tx_hash = W3.eth.sendRawTransaction(signed_tx.rawTransaction)
     print(tx_hash)
+
+
+@task
+def list_claimed_stakedrop_rewards(operator):
+    operator = Web3.toChecksumAddress(operator)
+    events = ECDSA_REWARDS_DISTRIBUTOR_CONTRACT.events.RewardsClaimed.getLogs(
+        fromBlock=11432833,
+        argument_filters={'operator': operator}
+    )
+    pprint(events)
+
+#
+# @task
+# def claim_stakedrop_rewards(operator):
+#     for merkle_root, info in REWARDS_DATA.items():
+#         if 'claims' in info:
+#             pass
+#     merkle_root = ''
+#     index = 0
+#     amount = 0
+#     merkle_proof = []
+#     # TODO: filter out claimed rewards
+#     pass
