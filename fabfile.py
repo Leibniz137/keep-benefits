@@ -19,6 +19,13 @@ with KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_JSON_FILE.open() as fp:
     KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_ABI = random_beacon_statistics_artifact['abi']   # noqa: E501
     KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_ADDRESS = random_beacon_statistics_artifact['networks']["1"]["address"]   # noqa: E501
 
+
+ECDSA_REWARDS_DISTRIBUTOR_JSON_FILE = Path(__file__).parent / 'ECDSARewardsDistributor.json'   # noqa: E501
+with ECDSA_REWARDS_DISTRIBUTOR_JSON_FILE.open() as fp:
+    ecdsa_rewards_artifact = json.load(fp)
+    ECDSA_REWARDS_DISTRIBUTOR_ABI = ecdsa_rewards_artifact['abi']
+    ECDSA_REWARDS_DISTRIBUTOR_ADDRESS = ecdsa_rewards_artifact['networks']["1"]["address"]   # noqa: E501
+
 DAPPNODE_HTTP_RPC_URL = 'http://fullnode.dappnode:8545/'
 HTTP_RPC_URL = os.environ.get('HTTP_RPC_URL', DAPPNODE_HTTP_RPC_URL)
 PROVIDER = Web3.HTTPProvider(HTTP_RPC_URL)
@@ -35,6 +42,11 @@ KEEP_RANDOM_BEACON_OPERATOR_CONTRACT_INIT_BLOCK = 10834116
 KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_CONTRACT = W3.eth.contract(
     abi=KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_ABI,
     address=KEEP_RANDOM_BEACON_OPERATOR_STATISTICS_ADDRESS
+)
+
+ECDSA_REWARDS_DISTRIBUTOR_CONTRACT = W3.eth.contract(
+    abi=ECDSA_REWARDS_DISTRIBUTOR_ABI,
+    address=ECDSA_REWARDS_DISTRIBUTOR_ADDRESS
 )
 
 
