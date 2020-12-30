@@ -194,8 +194,11 @@ def claim_beacon_rewards(operator):
     print(tx_hash)
 
 
+# TODO: add task to grab latest rewards data from github
+
+
 @task
-def list_claimed_stakedrop_rewards(operator):
+def list_claimed_ecdsa_rewards(operator):
     operator = Web3.toChecksumAddress(operator)
     events = ECDSA_REWARDS_DISTRIBUTOR_CONTRACT.events.RewardsClaimed.getLogs(
         fromBlock=11432833,
@@ -203,15 +206,55 @@ def list_claimed_stakedrop_rewards(operator):
     )
     pprint(events)
 
-#
+
+@task
+def list_unclaimed_ecdsa_rewards(operator):
+    operator = Web3.toChecksumAddress(operator)
+
+    events = ECDSA_REWARDS_DISTRIBUTOR_CONTRACT.events.RewardsClaimed.getLogs(
+        fromBlock=11432833,
+        argument_filters={'operator': operator}
+    )
+    claimed_rewards = set()
+    for event in events:
+        # NOTE: this is not totally foolproof
+        #       just very unlikely to have colliding index + amount
+        claimed_rewards.add((event.args.index, event.args.amount))
+
+    for merkle_root, info in REWARDS_DATA.items():
+        if 'claims' in info:
+            for claim in info['claims']:
+                if claim == operator:
+                    amount = eval(info['claims'][claim]['amount'])
+                    index = info['claims'][claim]['index']
+                    if (index, amount) not in claimed_rewards:
+                        print(info['claims'][claim])
+
+
+@task
+def list_all_ecdsa_rewards(operator):
+    operator = Web3.toChecksumAddress(operator)
+    for merkle_root, info in REWARDS_DATA.items():
+        if 'claims' in info:
+            for claim in info['claims']:
+                if claim == operator:
+                    print(info['claims'][claim])
+
+
 # @task
-# def claim_stakedrop_rewards(operator):
+# def claim_ecdsa_rewards(operator):
+#     operator = Web3.toChecksumAddress(operator)
+#     # events = ECDSA_REWARDS_DISTRIBUTOR_CONTRACT.events.RewardsAllocated.getLogs(
+#     #     fromBlock=11432833,
+#     # )
 #     for merkle_root, info in REWARDS_DATA.items():
 #         if 'claims' in info:
-#             pass
-#     merkle_root = ''
-#     index = 0
-#     amount = 0
-#     merkle_proof = []
-#     # TODO: filter out claimed rewards
+#             for claim in info['claims']:
+#                 if claim == operator:
+#                     import pdb; pdb.set_trace()
+#                     # merkle_root = ''
+#                     # index = 0
+#                     # amount = 0
+#                     # merkle_proof = []
+#     # # TODO: filter out claimed rewards
 #     pass
