@@ -2,9 +2,11 @@ import json
 import os
 from pathlib import Path
 from pprint import pprint
+import time
 
 from fabric.api import task
 from web3 import Web3
+from web3.exceptions import TransactionNotFound
 from web3.gas_strategies.time_based import medium_gas_price_strategy
 
 KEEP_RANDOM_BEACON_OPERATOR_JSON_FILE = Path(__file__).parent / 'KeepRandomBeaconOperator.json'   # noqa: E501
@@ -31,7 +33,12 @@ HTTP_RPC_URL = os.environ.get('HTTP_RPC_URL', DAPPNODE_HTTP_RPC_URL)
 PROVIDER = Web3.HTTPProvider(HTTP_RPC_URL)
 W3 = Web3(PROVIDER)
 W3.eth.setGasPriceStrategy(medium_gas_price_strategy)
+ATTEMPTS = 150
 
+# the estimated gas limit could be off, so add 10,000 gas to the limit
+GAS_LIMIT_FUDGE_FACTOR = 10000
+
+DRY_RUN = bool(os.environ.get('DRY_RUN', False))
 
 KEEP_RANDOM_BEACON_OPERATOR_CONTRACT = W3.eth.contract(
     abi=KEEP_RANDOM_BEACON_OPERATOR_ABI,
@@ -241,20 +248,66 @@ def list_all_ecdsa_rewards(operator):
                     print(info['claims'][claim])
 
 
-# @task
-# def claim_ecdsa_rewards(operator):
-#     operator = Web3.toChecksumAddress(operator)
-#     # events = ECDSA_REWARDS_DISTRIBUTOR_CONTRACT.events.RewardsAllocated.getLogs(
-#     #     fromBlock=11432833,
-#     # )
-#     for merkle_root, info in REWARDS_DATA.items():
-#         if 'claims' in info:
-#             for claim in info['claims']:
-#                 if claim == operator:
-#                     import pdb; pdb.set_trace()
-#                     # merkle_root = ''
-#                     # index = 0
-#                     # amount = 0
-#                     # merkle_proof = []
-#     # # TODO: filter out claimed rewards
-#     pass
+def perform_tx(tx, account):
+    """internal"""
+    signed_tx = W3.eth.account.sign_transaction(tx, account.key)
+    if not DRY_RUN:
+        tx_hash = W3.eth.sendRawTransaction(signed_tx.rawTransaction)
+
+        for i in range(ATTEMPTS + 1):
+            time.sleep(i)
+            try:
+                receipt = W3.eth.getTransactionReceipt(tx_hash)
+            except TransactionNotFound:
+                print(f'waiting for {tx_hash.hex()} to be mined')
+                continue
+            break
+        assert receipt['status'] != 0, f'{tx_hash.hex()} failed'
+        print(f'{tx_hash.hex()} performed successfully')
+    else:
+        print('Skipping performing transaction')
+
+
+@task
+def claim_ecdsa_rewards(operator):
+    operator = Web3.toChecksumAddress(operator)
+
+    skey = os.environ['ETHEREUM_PRIVATE_KEY']
+    account = W3.eth.account.from_key(skey)
+
+    events = ECDSA_REWARDS_DISTRIBUTOR_CONTRACT.events.RewardsClaimed.getLogs(
+        fromBlock=11432833,
+        argument_filters={'operator': operator}
+    )
+    claimed_rewards = set()
+    for event in events:
+        # NOTE: this is not totally foolproof
+        #       just very unlikely to have colliding index + amount
+        claimed_rewards.add((event.args.index, event.args.amount))
+
+    for merkle_root, info in REWARDS_DATA.items():
+        if 'claims' in info:
+            for claim, data in info['claims'].items():
+                if claim == operator:
+                    amount = eval(info['claims'][claim]['amount'])
+                    index = info['claims'][claim]['index']
+                    if (index, amount) not in claimed_rewards:
+                        index = data['index']
+                        merkle_proof = data['proof']
+                        contract_call = ECDSA_REWARDS_DISTRIBUTOR_CONTRACT.functions.claim(   # noqa: E501
+                            merkle_root,
+                            index,
+                            operator,
+                            amount,
+                            merkle_proof
+                        )
+                        gas_limit = contract_call.estimateGas() + GAS_LIMIT_FUDGE_FACTOR   # noqa: E501
+                        gas_price = W3.eth.generateGasPrice()
+
+                        tx = contract_call.buildTransaction({
+                            'chainId': W3.eth.chainId,
+                            'gas': gas_limit,
+                            'gasPrice': gas_price,
+                            'nonce': W3.eth.getTransactionCount(account.address)   # noqa: E501
+                        })
+                        perform_tx(tx, account)
