@@ -5,6 +5,7 @@ from pprint import pprint
 import time
 
 from fabric.api import task
+import requests
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
 from web3.gas_strategies.time_based import medium_gas_price_strategy
@@ -201,7 +202,14 @@ def claim_beacon_rewards(operator):
     print(tx_hash)
 
 
-# TODO: add task to grab latest rewards data from github
+@task
+def get_latest_rewards_data():
+    "get latest rewards data from keep-network/keep-core github repo"
+    url = "https://raw.githubusercontent.com/keep-network/keep-core/master/solidity/dashboard/src/rewards-allocation/rewards.json"   # noqa: E501
+    resp = requests.get(url)
+    resp.raise_for_status()
+    with REWARDS_DATA_PATH.open('w') as fp:
+        fp.write(resp.text)
 
 
 @task
