@@ -127,6 +127,7 @@ def list_unclaimed_beacon_rewards(operator):
             groups[group_index] = {
                 'pubkey': group.pub_key,
                 'rewards': group.rewards / 10**18,
+                'group_index': group_index,
             }
     pprint(groups)
 
