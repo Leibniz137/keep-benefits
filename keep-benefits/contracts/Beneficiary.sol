@@ -51,7 +51,7 @@ contract Beneficiary is Ownable {
     */
     function claimBeaconRewards(uint256[] calldata groupIndicies, address operator) public {
         for (uint256 i = 0; i < groupIndicies.length; i++) {
-            randomBeaconOperator.withdrawGroupMemberRewards(operator, i);
+            randomBeaconOperator.withdrawGroupMemberRewards(operator, groupIndicies[i]);
         }
     }
 
