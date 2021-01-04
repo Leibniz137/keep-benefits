@@ -1,15 +1,15 @@
-def test_withdraw_eth(accounts, Beneficiary):
+def test_withdraw_eth(accounts, BulkClaimer):
     deployer = accounts[0]
 
     starting_balance = deployer.balance()
 
-    beneficiary = Beneficiary.deploy(
+    claimer = BulkClaimer.deploy(
             '0xdF708431162Ba247dDaE362D2c919e0fbAfcf9DE',
             {'from': deployer})
 
-    accounts[1].transfer(beneficiary, "10 ether", gas_price=0)
+    accounts[1].transfer(claimer, "10 ether", gas_price=0)
 
-    tx = beneficiary.withdrawEth(10**18)
+    tx = claimer.withdrawEth(10**18)
 
     # transaction is successful
     assert tx.status == 1
@@ -17,18 +17,18 @@ def test_withdraw_eth(accounts, Beneficiary):
     assert deployer.balance() == starting_balance + "1 ether"
 
 
-def test_withdraw_erc20(accounts, Beneficiary, Token):
-    beneficiary_deployer = accounts[0]
-    beneficiary = Beneficiary.deploy(
+def test_withdraw_erc20(accounts, BulkClaimer, Token):
+    claimer_deployer = accounts[0]
+    claimer = BulkClaimer.deploy(
         '0xdF708431162Ba247dDaE362D2c919e0fbAfcf9DE',
-        {'from': beneficiary_deployer})
+        {'from': claimer_deployer})
 
     token_deployer = accounts[1]
     initial_supply = 10
     token = token_deployer.deploy(Token, initial_supply)
 
-    token.transfer(beneficiary, 5, {'from': token_deployer})
+    token.transfer(claimer, 5, {'from': token_deployer})
 
-    beneficiary.withdrawERC20(5, token)
+    claimer.withdrawERC20(5, token)
 
-    assert token.balanceOf(beneficiary_deployer.address) == 5
+    assert token.balanceOf(claimer_deployer.address) == 5

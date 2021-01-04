@@ -11,9 +11,10 @@ import "../interfaces/IKeepRandomBeaconOperator.sol";
 
 
 /*
-Beneficiary's withdrawal methods only ever send eth to the owner.
+BulkClaimer's withdrawal methods only ever send eth to the owner.
+These are only used when tokens or eth is accidentally sent to this contract.
 */
-contract Beneficiary is Ownable {
+contract BulkClaimer is Ownable {
     IKeepRandomBeaconOperator private randomBeaconOperator;
 
     event ReceivedEther(address, uint);
@@ -49,7 +50,7 @@ contract Beneficiary is Ownable {
     TODO: should this be a list of operators?
           (for users running multiple operators)
     */
-    function claimBeaconRewards(uint256[] calldata groupIndicies, address operator) public {
+    function claimBeaconEarnings(uint256[] calldata groupIndicies, address operator) public {
         for (uint256 i = 0; i < groupIndicies.length; i++) {
             randomBeaconOperator.withdrawGroupMemberRewards(operator, groupIndicies[i]);
         }

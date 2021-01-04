@@ -102,21 +102,24 @@ def operator_groups(operator):
     return groups
 
 
+# TODO: change terminology here? rewards mean KEEP
+
+
 @task
-def list_all_beacon_rewards(operator):
-    "operator_address -> [rewards]"
+def list_all_beacon_earnings(operator):
+    "operator_address -> [earnings]"
     operator = Web3.toChecksumAddress(operator)
     groups = {}
     for group_index, group in operator_groups(operator).items():
         groups[group_index] = {
             'pubkey': group.pub_key,
-            'rewards': group.rewards / 10**18,
+            'earnings': group.rewards / 10**18,
         }
     pprint(groups)
 
 
 @task
-def list_unclaimed_beacon_rewards(operator):
+def list_unclaimed_beacon_earnings(operator):
     operator = Web3.toChecksumAddress(operator)
     groups = {}
     for group_index, group in operator_groups(operator).items():
@@ -126,7 +129,7 @@ def list_unclaimed_beacon_rewards(operator):
         if group.stale and not has_withdrawn:
             groups[group_index] = {
                 'pubkey': group.pub_key,
-                'rewards': group.rewards / 10**18,
+                'earnings': group.rewards / 10**18,
                 'group_index': group_index,
             }
     pprint(groups)
@@ -154,14 +157,14 @@ def load_private_key():
     return skey
 
 
-def load_benefits_contract():
+def load_claimer_contract():
     try:
-        keep_benefits_address = os.environ['KEEP_BENEFITS_CONTRACT_ADDRESS']   # noqa: E501
+        keep_benefits_address = os.environ['KEEP_CLAIMER_CONTRACT_ADDRESS']   # noqa: E501
     except KeyError:
-        msg = "Error: Must have KEEP_BENEFITS_CONTRACT_ADDRESS environment variable set"   # noqa: E501
+        msg = "Error: Must have KEEP_CLAIMER_CONTRACT_ADDRESS environment variable set"   # noqa: E501
         raise RuntimeError(msg)
     # this was created when you initially compiled & deployed the contract
-    keep_benefits_json_file = Path(__file__).parent / 'keep-benefits/build/contracts/Beneficiary.json'   # noqa: E501
+    keep_benefits_json_file = Path(__file__).parent / 'keep-benefits/build/contracts/BulkClaimer.json'   # noqa: E501
     with keep_benefits_json_file.open() as fp:
         keep_benefits_abi = json.load(fp)['abi']
     contract = W3.eth.contract(
@@ -173,11 +176,11 @@ def load_benefits_contract():
 
 # TODO: make this *operator
 @task
-def claim_beacon_rewards(operator):
-    "first find epochs with unclaimed rewards, then claim them in bulk"
+def claim_beacon_earnings(operator):
+    "first find epochs with unclaimed income, then claim them in bulk"
     skey = load_private_key()
     account = W3.eth.account.from_key(skey)
-    benefits_contract = load_benefits_contract()
+    benefits_contract = load_claimer_contract()
     operator = Web3.toChecksumAddress(operator)
 
     group_indicies = []
@@ -188,7 +191,7 @@ def claim_beacon_rewards(operator):
         if group.stale and not has_withdrawn:
             group_indicies.append(group_index)
     print(f'group indicies: {group_indicies}')
-    contract_call = benefits_contract.functions.claimBeaconRewards(group_indicies, operator)   # noqa: E501
+    contract_call = benefits_contract.functions.claimBeaconEarnings(group_indicies, operator)   # noqa: E501
     gas_limit = contract_call.estimateGas()
     gas_price = W3.eth.generateGasPrice()
 
