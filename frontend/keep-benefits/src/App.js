@@ -87,6 +87,26 @@ function ChainId () {
   );
 }
 
+function Account () {
+  const { account } = useWeb3React();
+
+  return (
+    <>
+      <span>Account</span>
+      <span role='img' aria-label='robot'>
+        🤖
+      </span>
+      <span>
+        {account === null
+          ? '-'
+          : account
+            ? `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
+            : ''}
+      </span>
+    </>
+  );
+}
+
 function App () {
   const context = useWeb3React();
   const { connector, library, chainId, account, activate, deactivate, active, error } = context;
@@ -121,6 +141,7 @@ function App () {
           Learn React
         </a>
         <ChainId />
+        <Account />
       </header>
     </div>
   );
