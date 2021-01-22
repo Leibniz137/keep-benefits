@@ -59,8 +59,11 @@ ECDSA_REWARDS_DISTRIBUTOR_CONTRACT = W3.eth.contract(
 
 # see: https://github.com/keep-network/keep-core/blob/master/solidity/dashboard/src/rewards-allocation/rewards.json   # noqa: E501
 REWARDS_DATA_PATH = Path(__file__).parent / 'artifacts/rewards-data.json'
-with REWARDS_DATA_PATH.open() as fp:
-    REWARDS_DATA = json.load(fp)
+if REWARDS_DATA_PATH.exists():
+    with REWARDS_DATA_PATH.open() as fp:
+        REWARDS_DATA = json.load(fp)
+else:
+    REWARDS_DATA = {}
 
 
 class Group:
