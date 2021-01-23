@@ -1,4 +1,6 @@
 import fs from 'fs';
+import process from 'process';
+
 import { ethers } from 'ethers';
 
 const url = 'http://fullnode.dappnode:8545';
@@ -12,20 +14,29 @@ const contract = new ethers.Contract(contractAddress, abi, provider);
 const eventName = 'DkgResultSubmittedEvent';
 const contractInitBlock = 10834116;
 
-const operator = ethers.utils.getAddress('0x2baf3650263348f3304c18900a674bb0bf830801');
+const operator = ethers.utils.getAddress(process.argv[2]);
 console.log(operator);
 
 (async function () {
   const events = await contract.queryFilter(eventName, contractInitBlock);
   // var groups = {};
-  var members, groupPubKey, event;
+  var members, groupPubKey, event, hasWithdrawn, isStale, rewards;
   for (var groupIndex = 0; groupIndex < events.length; groupIndex++) {
     event = events[groupIndex];
     groupPubKey = event.args.groupPubKey;
     members = await contract.getGroupMembers(groupPubKey);
-    members.forEach(function (member) {
+    members.forEach(async function (member) {
       if (member === operator) {
-        console.log(groupPubKey);
+        hasWithdrawn = await contract.hasWithdrawnRewards(operator, groupIndex);
+        isStale = await contract.isStaleGroup(groupPubKey);
+        if (isStale && !hasWithdrawn) {
+          rewards = await contract.getGroupMemberRewards(groupPubKey);
+          console.log({
+            pubkey: groupPubKey,
+            earnings: rewards / 10 ** 18,
+            group_index: groupIndex
+          });
+        }
       }
     });
   }
