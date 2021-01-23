@@ -147,20 +147,31 @@ function Balance () {
   );
 }
 
-// function OperatorAccount () {
-//   const context = useWeb3React();
-//   const { library, account } = useWeb3React();
-//
-//   return (
-//     <>
-//       <span>Operator Account</span>
-//       <span role='img' aria-label='robot'>
-//         🤖
-//       </span>
-//       <span>{Object.getOwnPropertyNames(context)}</span>
-//     </>
-//   );
-// }
+function OperatorAccount () {
+  // const context = useWeb3React();
+  // const { library, account } = useWeb3React();
+  const [address, setAddress] = React.useState('');
+
+  function handleSubmit (event) {
+    event.preventDefault(); // stops default reloading behaviour
+    console.log(address);
+  }
+
+  function handleAddressChange (event) {
+    setAddress(event.target.value);
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Operator:
+        <input type='text' placeholder='0x...' value={address} onChange={handleAddressChange} />
+      </label>
+      <input type='submit' value='Submit' />
+    </form>
+  );
+}
+
 // {account === null
 //   ? '-'
 //   : account
@@ -191,6 +202,7 @@ function App () {
         <ChainId />
         <Account />
         <Balance />
+        <OperatorAccount />
       </header>
     </div>
   );
