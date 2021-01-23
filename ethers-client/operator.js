@@ -12,7 +12,15 @@ const contract = new ethers.Contract(contractAddress, abi, provider);
 const eventName = 'DkgResultSubmittedEvent';
 const contractInitBlock = 10834116;
 
+// const operator = '0x2baf3650263348f3304c18900a674bb0bf830801';
+
 (async function () {
   const events = await contract.queryFilter(eventName, contractInitBlock);
-  console.log(events);
+  // var groups = {};
+  var members, groupPubKey;
+  events.forEach(async function (event) {
+    groupPubKey = event.args.groupPubKey;
+    members = await contract.getGroupMembers(groupPubKey);
+    console.log(members);
+  });
 })();
