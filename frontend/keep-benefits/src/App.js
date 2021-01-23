@@ -1,3 +1,4 @@
+import { formatEther } from '@ethersproject/units';
 import React from 'react';
 import { useWeb3React } from '@web3-react/core';
 import logo from './logo.svg';
@@ -94,7 +95,7 @@ function Account () {
     <>
       <span>Account</span>
       <span role='img' aria-label='robot'>
-        🤖
+        🥩
       </span>
       <span>
         {account === null
@@ -106,6 +107,65 @@ function Account () {
     </>
   );
 }
+
+function Balance () {
+  const { account, library, chainId } = useWeb3React();
+
+  const [balance, setBalance] = React.useState();
+  React.useEffect(() => {
+    if (!!account && !!library) {
+      let stale = false;
+
+      library
+        .getBalance(account)
+        .then((balance) => {
+          if (!stale) {
+            setBalance(balance);
+          }
+        })
+        .catch(() => {
+          if (!stale) {
+            setBalance(null);
+          }
+        });
+
+      return () => {
+        stale = true;
+        setBalance(undefined);
+      };
+    }
+  }, [account, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
+
+  return (
+    <>
+      <span>Balance</span>
+      <span role='img' aria-label='gold'>
+        💰
+      </span>
+      <span>{balance === null ? 'Error' : balance ? `Ξ${formatEther(balance)}` : ''}</span>
+    </>
+  );
+}
+
+// function OperatorAccount () {
+//   const context = useWeb3React();
+//   const { library, account } = useWeb3React();
+//
+//   return (
+//     <>
+//       <span>Operator Account</span>
+//       <span role='img' aria-label='robot'>
+//         🤖
+//       </span>
+//       <span>{Object.getOwnPropertyNames(context)}</span>
+//     </>
+//   );
+// }
+// {account === null
+//   ? '-'
+//   : account
+//     ? `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
+//     : ''}
 
 function App () {
   const context = useWeb3React();
@@ -124,24 +184,13 @@ function App () {
 
   // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
   useInactiveListener(!triedEager || !!activatingConnector);
-
+  // debugger;
   return (
     <div className='App'>
       <header className='App-header'>
-        <img src={logo} className='App-logo' alt='logo' />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className='App-link'
-          href='https://reactjs.org'
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          Learn React
-        </a>
         <ChainId />
         <Account />
+        <Balance />
       </header>
     </div>
   );
