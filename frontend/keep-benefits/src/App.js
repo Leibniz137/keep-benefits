@@ -1,8 +1,11 @@
 import { formatEther } from '@ethersproject/units';
+// import { ethers } from 'ethers';
+import { useTable } from 'react-table';
 import React from 'react';
 import { useWeb3React } from '@web3-react/core';
-import logo from './logo.svg';
+
 import './App.css';
+// import KeepRandomBeaconOperator from './KeepRandomBeaconOperator.json';
 import { injected } from './connectors.js';
 
 export function useEagerConnect () {
@@ -147,11 +150,87 @@ function Balance () {
   );
 }
 
+// async function loadRewards (library, operator) {
+//   const contractAddress = KeepRandomBeaconOperator.networks['1'].address;
+//   const abi = KeepRandomBeaconOperator.abi;
+//
+//   const provider = new library.providers.Web3Provider(window.ethereum);
+//   const contract = new library.Contract(contractAddress, abi, provider);
+//
+//   const eventName = 'DkgResultSubmittedEvent';
+//   const contractInitBlock = 10834116;
+//
+//   const events = await contract.queryFilter(eventName, contractInitBlock);
+//   var groups = [];
+//   var members, groupPubKey, event, hasWithdrawn, isStale, rewards;
+//   for (var groupIndex = 0; groupIndex < events.length; groupIndex++) {
+//     event = events[groupIndex];
+//     groupPubKey = event.args.groupPubKey;
+//     members = await contract.getGroupMembers(groupPubKey);
+//     members.forEach(async function (member) {
+//       if (member === operator) {
+//         hasWithdrawn = await contract.hasWithdrawnRewards(operator, groupIndex);
+//         isStale = await contract.isStaleGroup(groupPubKey);
+//         if (isStale && !hasWithdrawn) {
+//           rewards = await contract.getGroupMemberRewards(groupPubKey);
+//           groups.append({
+//             pubkey: groupPubKey,
+//             earnings: rewards / 10 ** 18,
+//             group_index: groupIndex
+//           });
+//         }
+//       }
+//     });
+//     return groups;
+//   }
+// }
+
 function OperatorAccount () {
   // const context = useWeb3React();
-  // const { library, account } = useWeb3React();
+  // const { library } = useWeb3React();
+
   const [address, setAddress] = React.useState('');
 
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'Group Index',
+        accessor: 'groupIndex' // accessor is the "key" in the data
+      },
+      {
+        Header: 'Rewards',
+        accessor: 'rewards'
+      }
+    ],
+    []
+  );
+
+  const data = React.useMemo(
+    () => [
+      {
+        col1: 'Hello',
+        col2: 'World'
+      },
+      {
+        col1: 'react-table',
+        col2: 'rocks'
+      },
+      {
+        col1: 'whatever',
+        col2: 'you want'
+      }
+    ],
+    []
+  );
+
+  const tableInstance = useTable({ columns, data });
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow
+  } = tableInstance;
   function handleSubmit (event) {
     event.preventDefault(); // stops default reloading behaviour
     console.log(address);
@@ -162,13 +241,69 @@ function OperatorAccount () {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Operator:
-        <input type='text' placeholder='0x...' value={address} onChange={handleAddressChange} />
-      </label>
-      <input type='submit' value='Submit' />
-    </form>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <label>
+          Operator:
+          <input type='text' placeholder='0x...' value={address} onChange={handleAddressChange} />
+        </label>
+        <input type='submit' value='Submit' />
+      </form>
+      <table {...getTableProps()} style={{ border: 'solid 1px blue' }}>
+        <thead>
+          {
+            headerGroups.map(headerGroup => (
+              <tr {...headerGroup.getHeaderGroupProps()}>
+                {
+                  headerGroup.headers.map(column => (
+                    <th
+                      {...column.getHeaderProps()}
+                      style={{
+                        borderBottom: 'solid 3px red',
+                        background: 'aliceblue',
+                        color: 'black',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {column.render('Header')}
+                    </th>
+                  ))
+                }
+              </tr>
+            ))
+          }
+        </thead>
+        <tbody {...getTableBodyProps()}>
+          {
+            rows.map(
+              row => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()}>
+                    {
+                      row.cells.map(cell => {
+                        return (
+                          <td
+                            {...cell.getCellProps()}
+                            style={{
+                              padding: '10px',
+                              border: 'solid 1px gray',
+                              background: 'papayawhip'
+                            }}
+                          >
+                            {cell.render('Cell')}
+                          </td>
+                        );
+                      })
+                    }
+                  </tr>
+                );
+              }
+            )
+          }
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -180,7 +315,8 @@ function OperatorAccount () {
 
 function App () {
   const context = useWeb3React();
-  const { connector, library, chainId, account, activate, deactivate, active, error } = context;
+  // const { connector, library, chainId, account, activate, deactivate, active, error } = context;
+  const { connector } = context;
 
   // handle logic to recognize the connector currently being activated
   const [activatingConnector, setActivatingConnector] = React.useState();
