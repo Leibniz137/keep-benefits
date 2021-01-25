@@ -253,11 +253,12 @@ function OperatorAccount () {
         <thead>
           {
             headerGroups.map(headerGroup => (
-              <tr {...headerGroup.getHeaderGroupProps()}>
+              <tr key={headerGroup} {...headerGroup.getHeaderGroupProps()}>
                 {
                   headerGroup.headers.map(column => (
                     <th
                       {...column.getHeaderProps()}
+                      key={column}
                       style={{
                         borderBottom: 'solid 3px red',
                         background: 'aliceblue',
@@ -279,12 +280,13 @@ function OperatorAccount () {
               row => {
                 prepareRow(row);
                 return (
-                  <tr {...row.getRowProps()}>
+                  <tr key={row} {...row.getRowProps()}>
                     {
                       row.cells.map(cell => {
                         return (
                           <td
                             {...cell.getCellProps()}
+                            key={cell}
                             style={{
                               padding: '10px',
                               border: 'solid 1px gray',
