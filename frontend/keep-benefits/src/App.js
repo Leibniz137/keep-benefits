@@ -253,12 +253,12 @@ function OperatorAccount () {
         <thead>
           {
             headerGroups.map(headerGroup => (
-              <tr key={headerGroup} {...headerGroup.getHeaderGroupProps()}>
+              <tr key={Math.random().toString()} {...headerGroup.getHeaderGroupProps()}>
                 {
                   headerGroup.headers.map(column => (
                     <th
                       {...column.getHeaderProps()}
-                      key={column}
+                      key={Math.random().toString()}
                       style={{
                         borderBottom: 'solid 3px red',
                         background: 'aliceblue',
@@ -280,13 +280,13 @@ function OperatorAccount () {
               row => {
                 prepareRow(row);
                 return (
-                  <tr key={row} {...row.getRowProps()}>
+                  <tr key={Math.random().toString()} {...row.getRowProps()}>
                     {
                       row.cells.map(cell => {
                         return (
                           <td
                             {...cell.getCellProps()}
-                            key={cell}
+                            key={Math.random().toString()}
                             style={{
                               padding: '10px',
                               border: 'solid 1px gray',
