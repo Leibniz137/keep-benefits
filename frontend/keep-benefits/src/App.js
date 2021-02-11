@@ -1,12 +1,15 @@
 import { formatEther } from '@ethersproject/units';
-// import { ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { useTable } from 'react-table';
 import React from 'react';
 import { useWeb3React } from '@web3-react/core';
 
 import './App.css';
-// import KeepRandomBeaconOperator from './KeepRandomBeaconOperator.json';
+import KeepRandomBeaconOperator from './KeepRandomBeaconOperator.json';
 import { injected } from './connectors.js';
+
+const CONTRACT_ADDRESS = KeepRandomBeaconOperator.networks['1'].address;
+const ABI = KeepRandomBeaconOperator.abi;
 
 export function useEagerConnect () {
   const { activate, active } = useWeb3React();
@@ -190,14 +193,66 @@ function OperatorAccount () {
 
   const [address, setAddress] = React.useState('');
   const [balance, setBalance] = React.useState('');
+  const [totalRewards, setTotalRewards] = React.useState('');
+
+  // NOTE: this data does not use React.useMemo because it needs to change!
+  var data = [
+    {
+      groupIndex: 'Hello',
+      rewards: 'World'
+    },
+    {
+      groupIndex: 'react-table',
+      rewards: totalRewards
+    },
+    {
+      groupIndex: 'whatever',
+      // rewards: formatEther(balance)
+      rewards: balance
+    }
+  ];
 
   // setBalance(0);
   React.useEffect(() => {
     if (!!account && !!library) {
       let stale = false;
 
+      const provider = new ethers.providers.Web3Provider(library.provider);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+
+      const eventName = 'DkgResultSubmittedEvent';
+      const contractInitBlock = 10834116;
+      const operator = '0x2BAF3650263348f3304c18900A674bB0BF830801';
+      setTotalRewards(0);
+      var savedTotalRewards = 0;
+      (async function () {
+        const events = await contract.queryFilter(eventName, contractInitBlock);
+        var members, groupPubKey, event, hasWithdrawn, isStale, rewards;
+        for (var groupIndex = 0; groupIndex < events.length; groupIndex++) {
+          event = events[groupIndex];
+          groupPubKey = event.args.groupPubKey;
+          members = await contract.getGroupMembers(groupPubKey);
+          members.forEach(async function (member) {
+            if (member === operator) {
+              hasWithdrawn = await contract.hasWithdrawnRewards(operator, groupIndex);
+              isStale = await contract.isStaleGroup(groupPubKey);
+              if (isStale && !hasWithdrawn) {
+                rewards = await contract.getGroupMemberRewards(groupPubKey);
+                console.log({
+                  earnings: rewards / 10 ** 18,
+                  group_index: groupIndex
+                });
+                savedTotalRewards += rewards / 10 ** 18;
+              }
+            }
+          });
+        }
+        // TODO: it would be nice if this could be updated in real-time
+        setTotalRewards(savedTotalRewards);
+      })();
+
       library
-        .getBalance('0xa404Aa997F72dE2a2df3adC34Ae33c898c1193C4')
+        .getBalance(operator)
         .then((b) => {
           setBalance(formatEther(b));
         })
@@ -258,22 +313,6 @@ function OperatorAccount () {
   //   ],
   //   []
   // );
-  // NOTE: this data does not use React.useMemo because it needs to change!
-  const data = [
-    {
-      groupIndex: 'Hello',
-      rewards: 'World'
-    },
-    {
-      groupIndex: 'react-table',
-      rewards: 'rocks'
-    },
-    {
-      groupIndex: 'whatever',
-      // rewards: formatEther(balance)
-      rewards: balance
-    }
-  ];
 
   const tableInstance = useTable({ columns, data });
   const {
