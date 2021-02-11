@@ -186,11 +186,46 @@ function Balance () {
 // }
 
 function OperatorAccount () {
-  // const context = useWeb3React();
-  // const { library } = useWeb3React();
+  const { account, library, chainId } = useWeb3React();
 
   const [address, setAddress] = React.useState('');
+  const [balance, setBalance] = React.useState('');
 
+  // setBalance(0);
+  React.useEffect(() => {
+    if (!!account && !!library) {
+      let stale = false;
+
+      library
+        .getBalance('0xa404Aa997F72dE2a2df3adC34Ae33c898c1193C4')
+        .then((b) => {
+          setBalance(formatEther(b));
+        })
+        .catch(() => {
+          if (!stale) {
+            setBalance(null);
+          }
+        });
+
+      return () => {
+        stale = true;
+        setBalance(undefined);
+      };
+    } else {
+      console.log('library is undefined');
+    }
+  }, [library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
+
+  // React.useEffect(() => {
+  //   if (library) {
+  //     library
+  //       .getBalance('0xa404Aa997F72dE2a2df3adC34Ae33c898c1193C4')
+  //       .then((balance) => {
+  //         setBalance(balance);
+  //       });
+  //   }
+  // }, [library]);
+  // balance = 3n * (10n ** 18n);
   const columns = React.useMemo(
     () => [
       {
@@ -205,23 +240,40 @@ function OperatorAccount () {
     []
   );
 
-  const data = React.useMemo(
-    () => [
-      {
-        groupIndex: 'Hello',
-        rewards: 'World'
-      },
-      {
-        groupIndex: 'react-table',
-        rewards: 'rocks'
-      },
-      {
-        groupIndex: 'whatever',
-        rewards: 'you want'
-      }
-    ],
-    []
-  );
+  // const data = React.useMemo(
+  //   () => [
+  //     {
+  //       groupIndex: 'Hello',
+  //       rewards: 'World'
+  //     },
+  //     {
+  //       groupIndex: 'react-table',
+  //       rewards: 'rocks'
+  //     },
+  //     {
+  //       groupIndex: 'whatever',
+  //       // rewards: formatEther(balance)
+  //       rewards: balance
+  //     }
+  //   ],
+  //   []
+  // );
+  // NOTE: this data does not use React.useMemo because it needs to change!
+  const data = [
+    {
+      groupIndex: 'Hello',
+      rewards: 'World'
+    },
+    {
+      groupIndex: 'react-table',
+      rewards: 'rocks'
+    },
+    {
+      groupIndex: 'whatever',
+      // rewards: formatEther(balance)
+      rewards: balance
+    }
+  ];
 
   const tableInstance = useTable({ columns, data });
   const {
