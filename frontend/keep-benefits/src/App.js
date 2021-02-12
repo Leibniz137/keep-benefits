@@ -194,6 +194,9 @@ function OperatorAccount () {
   const [address, setAddress] = React.useState('');
   const [balance, setBalance] = React.useState('');
   const [totalRewards, setTotalRewards] = React.useState('');
+  const [groupIndicies, setGroupIndicies] = React.useState('');
+
+  // TODO: switch from using a table to simple divs
 
   // NOTE: this data does not use React.useMemo because it needs to change!
   var data = [
@@ -202,7 +205,7 @@ function OperatorAccount () {
       rewards: 'World'
     },
     {
-      groupIndex: 'react-table',
+      groupIndex: groupIndicies,
       rewards: totalRewards
     },
     {
@@ -224,7 +227,9 @@ function OperatorAccount () {
       const contractInitBlock = 10834116;
       const operator = '0x2BAF3650263348f3304c18900A674bB0BF830801';
       setTotalRewards(0);
+      setGroupIndicies('');
       var savedTotalRewards = 0;
+      var groupIndiciesArray = [];
       (async function () {
         const events = await contract.queryFilter(eventName, contractInitBlock);
         var members, groupPubKey, event, hasWithdrawn, isStale, rewards;
@@ -243,12 +248,14 @@ function OperatorAccount () {
                   group_index: groupIndex
                 });
                 savedTotalRewards += rewards / 10 ** 18;
+                groupIndiciesArray.push(groupIndex);
               }
             }
           });
         }
         // TODO: it would be nice if this could be updated in real-time
         setTotalRewards(savedTotalRewards);
+        setGroupIndicies(JSON.stringify(groupIndiciesArray));
       })();
 
       library
