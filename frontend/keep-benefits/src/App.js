@@ -153,41 +153,6 @@ function Balance () {
   );
 }
 
-// async function loadRewards (library, operator) {
-//   const contractAddress = KeepRandomBeaconOperator.networks['1'].address;
-//   const abi = KeepRandomBeaconOperator.abi;
-//
-//   const provider = new library.providers.Web3Provider(window.ethereum);
-//   const contract = new library.Contract(contractAddress, abi, provider);
-//
-//   const eventName = 'DkgResultSubmittedEvent';
-//   const contractInitBlock = 10834116;
-//
-//   const events = await contract.queryFilter(eventName, contractInitBlock);
-//   var groups = [];
-//   var members, groupPubKey, event, hasWithdrawn, isStale, rewards;
-//   for (var groupIndex = 0; groupIndex < events.length; groupIndex++) {
-//     event = events[groupIndex];
-//     groupPubKey = event.args.groupPubKey;
-//     members = await contract.getGroupMembers(groupPubKey);
-//     members.forEach(async function (member) {
-//       if (member === operator) {
-//         hasWithdrawn = await contract.hasWithdrawnRewards(operator, groupIndex);
-//         isStale = await contract.isStaleGroup(groupPubKey);
-//         if (isStale && !hasWithdrawn) {
-//           rewards = await contract.getGroupMemberRewards(groupPubKey);
-//           groups.append({
-//             pubkey: groupPubKey,
-//             earnings: rewards / 10 ** 18,
-//             group_index: groupIndex
-//           });
-//         }
-//       }
-//     });
-//     return groups;
-//   }
-// }
-
 function OperatorAccount () {
   const { account, library, chainId } = useWeb3React();
 
@@ -215,7 +180,6 @@ function OperatorAccount () {
     }
   ];
 
-  // setBalance(0);
   React.useEffect(() => {
     if (!!account && !!library) {
       let stale = false;
@@ -278,16 +242,6 @@ function OperatorAccount () {
     }
   }, [library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
-  // React.useEffect(() => {
-  //   if (library) {
-  //     library
-  //       .getBalance('0xa404Aa997F72dE2a2df3adC34Ae33c898c1193C4')
-  //       .then((balance) => {
-  //         setBalance(balance);
-  //       });
-  //   }
-  // }, [library]);
-  // balance = 3n * (10n ** 18n);
   const columns = React.useMemo(
     () => [
       {
@@ -301,25 +255,6 @@ function OperatorAccount () {
     ],
     []
   );
-
-  // const data = React.useMemo(
-  //   () => [
-  //     {
-  //       groupIndex: 'Hello',
-  //       rewards: 'World'
-  //     },
-  //     {
-  //       groupIndex: 'react-table',
-  //       rewards: 'rocks'
-  //     },
-  //     {
-  //       groupIndex: 'whatever',
-  //       // rewards: formatEther(balance)
-  //       rewards: balance
-  //     }
-  //   ],
-  //   []
-  // );
 
   const tableInstance = useTable({ columns, data });
   const {
@@ -406,12 +341,6 @@ function OperatorAccount () {
     </div>
   );
 }
-
-// {account === null
-//   ? '-'
-//   : account
-//     ? `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
-//     : ''}
 
 function App () {
   const context = useWeb3React();
