@@ -1,6 +1,5 @@
 import { formatEther } from '@ethersproject/units';
 import { ethers } from 'ethers';
-import { useTable } from 'react-table';
 import React from 'react';
 import { useWeb3React } from '@web3-react/core';
 
@@ -161,25 +160,6 @@ function OperatorAccount () {
   const [totalRewards, setTotalRewards] = React.useState('');
   const [groupIndicies, setGroupIndicies] = React.useState('');
 
-  // TODO: switch from using a table to simple divs
-
-  // NOTE: this data does not use React.useMemo because it needs to change!
-  var data = [
-    {
-      groupIndex: 'Hello',
-      rewards: 'World'
-    },
-    {
-      groupIndex: groupIndicies,
-      rewards: totalRewards
-    },
-    {
-      groupIndex: 'whatever',
-      // rewards: formatEther(balance)
-      rewards: balance
-    }
-  ];
-
   React.useEffect(() => {
     if (!!account && !!library) {
       let stale = false;
@@ -242,28 +222,6 @@ function OperatorAccount () {
     }
   }, [library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: 'Group Index',
-        accessor: 'groupIndex' // accessor is the "key" in the data
-      },
-      {
-        Header: 'Rewards',
-        accessor: 'rewards'
-      }
-    ],
-    []
-  );
-
-  const tableInstance = useTable({ columns, data });
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow
-  } = tableInstance;
   function handleSubmit (event) {
     event.preventDefault(); // stops default reloading behaviour
     console.log(address);
@@ -282,62 +240,9 @@ function OperatorAccount () {
         </label>
         <input type='submit' value='Submit' />
       </form>
-      <table {...getTableProps()} style={{ border: 'solid 1px blue' }}>
-        <thead>
-          {
-            headerGroups.map(headerGroup => (
-              <tr key={Math.random().toString()} {...headerGroup.getHeaderGroupProps()}>
-                {
-                  headerGroup.headers.map(column => (
-                    <th
-                      {...column.getHeaderProps()}
-                      key={Math.random().toString()}
-                      style={{
-                        borderBottom: 'solid 3px red',
-                        background: 'aliceblue',
-                        color: 'black',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      {column.render('Header')}
-                    </th>
-                  ))
-                }
-              </tr>
-            ))
-          }
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {
-            rows.map(
-              row => {
-                prepareRow(row);
-                return (
-                  <tr key={Math.random().toString()} {...row.getRowProps()}>
-                    {
-                      row.cells.map(cell => {
-                        return (
-                          <td
-                            {...cell.getCellProps()}
-                            key={Math.random().toString()}
-                            style={{
-                              padding: '10px',
-                              border: 'solid 1px gray',
-                              background: 'papayawhip'
-                            }}
-                          >
-                            {cell.render('Cell')}
-                          </td>
-                        );
-                      })
-                    }
-                  </tr>
-                );
-              }
-            )
-          }
-        </tbody>
-      </table>
+      <p>Group Indices: {groupIndicies}</p>
+      <p>Total Rewards: {totalRewards}</p>
+      <p>Operator Balance: {balance}</p>
     </div>
   );
 }
