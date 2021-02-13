@@ -5,10 +5,14 @@ import { useWeb3React } from '@web3-react/core';
 
 import './App.css';
 import KeepRandomBeaconOperator from './KeepRandomBeaconOperator.json';
+import BulkClaimer from './BulkClaimer.json';
 import { injected } from './connectors.js';
 
 const CONTRACT_ADDRESS = KeepRandomBeaconOperator.networks['1'].address;
 const ABI = KeepRandomBeaconOperator.abi;
+const CLAIMER_ABI = BulkClaimer.abi;
+// TODO: change me this is ropsten
+const CLAIMER_ADDRESS = '0xED73d5F347efFc2b12063c8098C3d75e540a949e';
 
 export function useEagerConnect () {
   const { activate, active } = useWeb3React();
@@ -159,6 +163,7 @@ function OperatorAccount () {
   const [balance, setBalance] = React.useState('');
   const [totalRewards, setTotalRewards] = React.useState('');
   const [groupIndicies, setGroupIndicies] = React.useState('');
+  const operator = '0x2BAF3650263348f3304c18900A674bB0BF830801';
 
   React.useEffect(() => {
     if (!!account && !!library) {
@@ -169,7 +174,6 @@ function OperatorAccount () {
 
       const eventName = 'DkgResultSubmittedEvent';
       const contractInitBlock = 10834116;
-      const operator = '0x2BAF3650263348f3304c18900A674bB0BF830801';
       setTotalRewards(0);
       setGroupIndicies('');
       var savedTotalRewards = 0;
@@ -232,7 +236,12 @@ function OperatorAccount () {
   }
 
   function handleClaim () {
-    alert('clicked!');
+    const provider = new ethers.providers.Web3Provider(library.provider);
+    const contractWithoutSigner = new ethers.Contract(CLAIMER_ADDRESS, CLAIMER_ABI, provider);
+    const signer = provider.getSigner();
+    const contract = contractWithoutSigner.connect(signer);
+
+    contract.claimBeaconEarnings(JSON.parse(groupIndicies), operator);
   }
 
   return (
