@@ -231,6 +231,10 @@ function OperatorAccount () {
     setAddress(event.target.value);
   }
 
+  function handleClaim () {
+    alert('clicked!');
+  }
+
   return (
     <div>
       <form onSubmit={handleSubmit}>
@@ -243,6 +247,9 @@ function OperatorAccount () {
       <p>Group Indices: {groupIndicies}</p>
       <p>Total Rewards: {totalRewards}</p>
       <p>Operator Balance: {balance}</p>
+      <div>
+        <button onClick={handleClaim}>claim</button>
+      </div>
     </div>
   );
 }
