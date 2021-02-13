@@ -224,7 +224,7 @@ function OperatorAccount () {
     } else {
       console.log('library is undefined');
     }
-  }, [library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
+  }, [account, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
   function handleSubmit (event) {
     event.preventDefault(); // stops default reloading behaviour
