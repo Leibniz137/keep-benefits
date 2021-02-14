@@ -8,11 +8,18 @@ import KeepRandomBeaconOperator from './KeepRandomBeaconOperator.json';
 import BulkClaimer from './BulkClaimer.json';
 import { injected } from './connectors.js';
 
-const CONTRACT_ADDRESS = KeepRandomBeaconOperator.networks['1'].address;
+const RANDOM_BEACON_MAINNET_ADDRESS = KeepRandomBeaconOperator.networks['1'].address;
+const RANDOM_BEACON_ROPSTEN_ADDRESS = '0xC8337a94a50d16191513dEF4D1e61A6886BF410f';
 const ABI = KeepRandomBeaconOperator.abi;
 const CLAIMER_ABI = BulkClaimer.abi;
+
+const CLAIMER_ADDRESS_ROPSTEN = '0xBb19d16E1Ac4127D84E2F95fE7Dc7411C05b7d77';
 // TODO: change me this is ropsten
-const CLAIMER_ADDRESS = '0xED73d5F347efFc2b12063c8098C3d75e540a949e';
+const CLAIMER_ADDRESS_MAINNET = '0xBb19d16E1Ac4127D84E2F95fE7Dc7411C05b7d77';
+
+const EVENT_NAME = 'DkgResultSubmittedEvent';
+const RANDOM_BEACON_INIT_BLOCK_MAINNET = 10834116;
+const RANDOM_BEACON_INIT_BLOCK_ROPSTEN = 8580806;
 
 export function useEagerConnect () {
   const { activate, active } = useWeb3React();
@@ -158,36 +165,38 @@ function Balance () {
 
 function OperatorAccount () {
   const { account, library, chainId } = useWeb3React();
+  // if (chainId && chainId == )
+  console.log(chainId);
+  const claimerAddress = CLAIMER_ADDRESS_ROPSTEN;
+  const randomBeaconAddress = RANDOM_BEACON_ROPSTEN_ADDRESS;
+  const contractInitBlock = RANDOM_BEACON_INIT_BLOCK_ROPSTEN;
 
   const [address, setAddress] = React.useState('');
   const [balance, setBalance] = React.useState('');
   const [totalRewards, setTotalRewards] = React.useState('');
   const [groupIndicies, setGroupIndicies] = React.useState('');
-  const operator = '0x2BAF3650263348f3304c18900A674bB0BF830801';
 
   React.useEffect(() => {
     if (!!account && !!library) {
       let stale = false;
 
       const provider = new ethers.providers.Web3Provider(library.provider);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+      const contract = new ethers.Contract(randomBeaconAddress, ABI, provider);
 
-      const eventName = 'DkgResultSubmittedEvent';
-      const contractInitBlock = 10834116;
       setTotalRewards(0);
       setGroupIndicies('');
       var savedTotalRewards = 0;
       var groupIndiciesArray = [];
       (async function () {
-        const events = await contract.queryFilter(eventName, contractInitBlock);
+        const events = await contract.queryFilter(EVENT_NAME, contractInitBlock);
         var members, groupPubKey, event, hasWithdrawn, isStale, rewards;
         for (var groupIndex = 0; groupIndex < events.length; groupIndex++) {
           event = events[groupIndex];
           groupPubKey = event.args.groupPubKey;
           members = await contract.getGroupMembers(groupPubKey);
           members.forEach(async function (member) {
-            if (member === operator) {
-              hasWithdrawn = await contract.hasWithdrawnRewards(operator, groupIndex);
+            if (member === address) {
+              hasWithdrawn = await contract.hasWithdrawnRewards(address, groupIndex);
               isStale = await contract.isStaleGroup(groupPubKey);
               if (isStale && !hasWithdrawn) {
                 rewards = await contract.getGroupMemberRewards(groupPubKey);
@@ -207,7 +216,7 @@ function OperatorAccount () {
       })();
 
       library
-        .getBalance(operator)
+        .getBalance(address)
         .then((b) => {
           setBalance(formatEther(b));
         })
@@ -224,7 +233,7 @@ function OperatorAccount () {
     } else {
       console.log('library is undefined');
     }
-  }, [account, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
+  }, [account, address, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
   function handleSubmit (event) {
     event.preventDefault(); // stops default reloading behaviour
@@ -237,11 +246,11 @@ function OperatorAccount () {
 
   function handleClaim () {
     const provider = new ethers.providers.Web3Provider(library.provider);
-    const contractWithoutSigner = new ethers.Contract(CLAIMER_ADDRESS, CLAIMER_ABI, provider);
+    const contractWithoutSigner = new ethers.Contract(claimerAddress, CLAIMER_ABI, provider);
     const signer = provider.getSigner();
     const contract = contractWithoutSigner.connect(signer);
 
-    contract.claimBeaconEarnings(JSON.parse(groupIndicies), operator);
+    contract.claimBeaconEarnings(JSON.parse(groupIndicies), address);
   }
 
   return (
