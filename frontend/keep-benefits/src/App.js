@@ -184,7 +184,11 @@ function OperatorAccount () {
       const contract = new ethers.Contract(randomBeaconAddress, ABI, provider);
 
       setTotalRewards(0);
-      setGroupIndicies('');
+      if (address) {
+        setGroupIndicies('loading...');
+      } else {
+        setGroupIndicies('');
+      }
       var savedTotalRewards = 0;
       var groupIndiciesArray = [];
       (async function () {
