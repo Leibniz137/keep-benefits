@@ -209,7 +209,18 @@ function OperatorAccount () {
                   group_index: groupIndex
                 });
                 savedTotalRewards += rewards / 10 ** 18;
-                groupIndiciesArray.push(groupIndex);
+                /*
+                NOTE 1: check that groupIndex isn't already included
+                because (at least on ropsten) you can have a single
+                operator participate multiple times in a single group
+                */
+                /*
+                NOTE 2: in testing, some of the rewards showed up as 0
+                this seemed to trigger an error:
+                */
+                if (!(groupIndiciesArray.includes(groupIndex)) && rewards > 0) {
+                  groupIndiciesArray.push(groupIndex);
+                }
               }
             }
           });
