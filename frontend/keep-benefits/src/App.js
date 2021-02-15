@@ -260,11 +260,6 @@ function OperatorAccount () {
     }
   }, [account, address, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
-  function handleSubmit (event) {
-    event.preventDefault(); // stops default reloading behaviour
-    console.log(address);
-  }
-
   function handleAddressChange (event) {
     setAddress(event.target.value);
   }
@@ -280,12 +275,11 @@ function OperatorAccount () {
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form>
         <label>
           Operator:
           <input type='text' placeholder='0x...' value={address} onChange={handleAddressChange} />
         </label>
-        <input type='submit' value='Submit' />
       </form>
       <p>Group Indices: {groupIndicies}</p>
       <p>Total Rewards: {totalRewards}</p>
