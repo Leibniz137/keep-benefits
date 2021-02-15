@@ -187,7 +187,7 @@ function OperatorAccount () {
       if (address) {
         setGroupIndicies('loading...');
       } else {
-        setGroupIndicies('');
+        setGroupIndicies('∅');
       }
       var savedTotalRewards = 0;
       var groupIndiciesArray = [];
