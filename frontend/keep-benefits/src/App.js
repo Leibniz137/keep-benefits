@@ -232,15 +232,15 @@ function OperatorAccount () {
         }
         // TODO: it would be nice if this could be updated in real-time
         setTotalRewards(savedTotalRewards);
-        // TODO: dynamically determine maximum amount of claimable groups
         // 1. initialCost + (perLoopCost * n) < blockGasLimit
         // 2. perLoopCost * n < blockGasLimit - initialCost
         // 3. n = Math.floor((blockGasLimit - initialCost) / perLoopCost)
-        const blockGasLimit = 8000000;
+        const block = await library.getBlock('latest');
+        const blockGasLimit = block.gasLimit;
         const perLoopCost = 297878;
         const initialCost = 410270;
         // NOTE: subtracting 1 was necessary in testing on ropsten
-        const maximum = Math.floor((blockGasLimit - initialCost) / perLoopCost) - 1;
+        const maximum = Math.floor((blockGasLimit.toNumber() - initialCost) / perLoopCost) - 1;
         console.log(`maximum: ${maximum}`);
         setGroupIndicies(JSON.stringify(groupIndiciesArray.slice(0, maximum)));
       })();
