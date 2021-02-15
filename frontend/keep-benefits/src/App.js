@@ -167,9 +167,14 @@ function OperatorAccount () {
   const { account, library, chainId } = useWeb3React();
   // if (chainId && chainId == )
   console.log(chainId);
-  const claimerAddress = CLAIMER_ADDRESS_ROPSTEN;
-  const randomBeaconAddress = RANDOM_BEACON_ROPSTEN_ADDRESS;
-  const contractInitBlock = RANDOM_BEACON_INIT_BLOCK_ROPSTEN;
+  var claimerAddress = CLAIMER_ADDRESS_MAINNET;
+  var randomBeaconAddress = RANDOM_BEACON_MAINNET_ADDRESS;
+  var contractInitBlock = RANDOM_BEACON_INIT_BLOCK_MAINNET;
+  if (chainId === 3) {
+    claimerAddress = CLAIMER_ADDRESS_ROPSTEN;
+    randomBeaconAddress = RANDOM_BEACON_ROPSTEN_ADDRESS;
+    contractInitBlock = RANDOM_BEACON_INIT_BLOCK_ROPSTEN;
+  }
 
   const [address, setAddress] = React.useState('');
   const [balance, setBalance] = React.useState('');
