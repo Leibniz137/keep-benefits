@@ -2,7 +2,7 @@ import os
 
 from brownie import (
     accounts,
-    Beneficiary,
+    BulkClaimer,
     network,
 )
 
@@ -21,4 +21,4 @@ def main():
         operator_address = MAINNET_RANDOM_BEACON_OPERATOR_ADDRESS
     else:
         raise ValueError(f"unsupported network {network}")
-    Beneficiary.deploy(operator_address, {'from': accounts[0]})
+    BulkClaimer.deploy(operator_address, {'from': accounts[0]}, publish_source=True)   # noqa: E501
