@@ -58,7 +58,12 @@ cd keep-benefits
 export WEB3_INFURA_PROJECT_ID='...'
 export PRIVATE_KEY='...'
 
+# required to verify contract source code
+export ETHERSCAN_TOKEN='...'
+
 # use --network mainnet for mainnet deploy
+# NOTE: delete build/ directory after each deployment!
+#       (cause etherscan contract verification to fail)
 brownie run deployment --network ropsten
 ```
 
