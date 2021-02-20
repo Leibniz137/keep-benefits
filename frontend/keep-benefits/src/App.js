@@ -296,6 +296,7 @@ function App () {
   return (
     <div className='App'>
       <header className='App-header'>
+        <p>NOTE: Bulk claiming is more gas efficient than claiming individually only if you have rewards for 4 or more beacon groups.</p>
         <ChainId />
         <Account />
         <Balance />
