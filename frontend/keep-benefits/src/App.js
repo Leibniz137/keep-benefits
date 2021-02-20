@@ -93,14 +93,11 @@ export function useInactiveListener (suppress = false) {
 function ChainId () {
   const { chainId } = useWeb3React();
 
+  // TODO: if chanid not in (1, 3) add warning/error
   return (
-    <>
-      <span>Chain Id</span>
-      <span role='img' aria-label='chain'>
-        ⛓
-      </span>
-      <span>{chainId ?? ''}</span>
-    </>
+    <div>
+      <p>Chain Id ⛓: {chainId ?? ''}</p>
+    </div>
   );
 }
 
@@ -108,19 +105,15 @@ function Account () {
   const { account } = useWeb3React();
 
   return (
-    <>
-      <span>Account</span>
-      <span role='img' aria-label='robot'>
-        🥩
-      </span>
-      <span>
-        {account === null
+    <div>
+      <p>
+      Current Account 🦊: {account === null
           ? '-'
           : account
             ? `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
             : ''}
-      </span>
-    </>
+      </p>
+    </div>
   );
 }
 
@@ -153,13 +146,11 @@ function Balance () {
   }, [account, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
   return (
-    <>
-      <span>Balance</span>
-      <span role='img' aria-label='gold'>
-        💰
-      </span>
-      <span>{balance === null ? 'Error' : balance ? `Ξ${formatEther(balance)}` : ''}</span>
-    </>
+    <div>
+      <p>
+        Current Account Balance: {balance === null ? 'Error' : balance ? `Ξ${formatEther(balance)}` : ''}
+      </p>
+    </div>
   );
 }
 
