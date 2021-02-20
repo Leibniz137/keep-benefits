@@ -9,13 +9,15 @@ import BulkClaimer from './BulkClaimer.json';
 import { injected } from './connectors.js';
 
 const RANDOM_BEACON_MAINNET_ADDRESS = KeepRandomBeaconOperator.networks['1'].address;
+// NOTE: this is the old beacon
+// new one is 0x89361Bd4E69C72194CDcAEcEA3A4df525F22Cb03
+// see: https://github.com/keep-network/keep-core/blob/master/docs/run-random-beacon.adoc#823-contracts
 const RANDOM_BEACON_ROPSTEN_ADDRESS = '0xC8337a94a50d16191513dEF4D1e61A6886BF410f';
 const ABI = KeepRandomBeaconOperator.abi;
 const CLAIMER_ABI = BulkClaimer.abi;
 
 const CLAIMER_ADDRESS_ROPSTEN = '0xBb19d16E1Ac4127D84E2F95fE7Dc7411C05b7d77';
-// TODO: change me this is ropsten
-const CLAIMER_ADDRESS_MAINNET = '0xBb19d16E1Ac4127D84E2F95fE7Dc7411C05b7d77';
+const CLAIMER_ADDRESS_MAINNET = '0xe35aAB9f8d5bDf50C005743362768Dd9CC883634';
 
 const EVENT_NAME = 'DkgResultSubmittedEvent';
 const RANDOM_BEACON_INIT_BLOCK_MAINNET = 10834116;
