@@ -242,7 +242,7 @@ function Rewards () {
     } else {
       console.log('library is undefined');
     }
-  }, [account, address, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
+  }, [account, address, contractInitBlock, library, randomBeaconAddress, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
   function handleAddressChange (event) {
     setAddress(event.target.value);
