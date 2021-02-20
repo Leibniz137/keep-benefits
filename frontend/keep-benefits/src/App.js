@@ -156,7 +156,7 @@ function Balance () {
   );
 }
 
-function OperatorAccount () {
+function Rewards () {
   const { account, library, chainId } = useWeb3React();
   // if (chainId && chainId == )
   console.log(chainId);
@@ -314,7 +314,7 @@ function App () {
         <ChainId />
         <Account />
         <Balance />
-        <OperatorAccount />
+        <Rewards />
       </header>
     </div>
   );
