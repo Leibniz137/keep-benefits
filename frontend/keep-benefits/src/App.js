@@ -170,7 +170,6 @@ function Rewards () {
   }
 
   const [address, setAddress] = React.useState('');
-  const [balance, setBalance] = React.useState('');
   const [totalRewards, setTotalRewards] = React.useState('');
   const [groupIndicies, setGroupIndicies] = React.useState('');
 
@@ -237,21 +236,8 @@ function Rewards () {
         console.log(`maximum: ${maximum}`);
         setGroupIndicies(JSON.stringify(groupIndiciesArray.slice(0, maximum)));
       })();
-
-      library
-        .getBalance(address)
-        .then((b) => {
-          setBalance(formatEther(b));
-        })
-        .catch(() => {
-          if (!stale) {
-            setBalance(null);
-          }
-        });
-
       return () => {
         stale = true;
-        setBalance(undefined);
       };
     } else {
       console.log('library is undefined');
@@ -281,7 +267,6 @@ function Rewards () {
       </form>
       <p>Group Indices: {groupIndicies}</p>
       <p>Total Rewards: {totalRewards}</p>
-      <p>Operator Balance: {balance}</p>
       <div>
         <button onClick={handleClaim}>claim</button>
       </div>
