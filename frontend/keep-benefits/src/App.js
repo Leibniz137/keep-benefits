@@ -1,4 +1,3 @@
-import { formatEther } from '@ethersproject/units';
 import { ethers } from 'ethers';
 import React from 'react';
 import { useWeb3React } from '@web3-react/core';
@@ -150,7 +149,7 @@ function Balance () {
   return (
     <div>
       <p>
-        Current Account Balance: {balance === null ? 'Error' : balance ? `Ξ${formatEther(balance)}` : ''}
+        Current Account Balance: {balance === null ? 'Error' : balance ? `Ξ${ethers.formatEther(balance)}` : ''}
       </p>
     </div>
   );
