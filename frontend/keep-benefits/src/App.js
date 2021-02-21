@@ -239,8 +239,6 @@ function Rewards () {
       return () => {
         stale = true;
       };
-    } else {
-      console.log('library is undefined');
     }
   }, [account, address, contractInitBlock, library, randomBeaconAddress, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
