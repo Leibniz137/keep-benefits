@@ -174,6 +174,7 @@ function Rewards () {
 
   React.useEffect(() => {
     if (!!account && !!library) {
+      // TODO: what does this do?
       let stale = false;
 
       const provider = new ethers.providers.Web3Provider(library.provider);
@@ -185,26 +186,26 @@ function Rewards () {
       } else {
         setGroupIndicies('∅');
       }
-      var savedTotalRewards = 0;
       var groupIndiciesArray = [];
       (async function () {
         const events = await contract.queryFilter(EVENT_NAME, contractInitBlock);
-        var members, groupPubKey, event, hasWithdrawn, isStale, rewards;
-        for (var groupIndex = 0; groupIndex < events.length; groupIndex++) {
-          event = events[groupIndex];
-          groupPubKey = event.args.groupPubKey;
-          members = await contract.getGroupMembers(groupPubKey);
-          members.forEach(async function (member) {
+        for (let groupIndex = 0; groupIndex < events.length; groupIndex++) {
+          const event = events[groupIndex];
+          const groupPubKey = event.args.groupPubKey;
+          const members = await contract.getGroupMembers(groupPubKey);
+          for (const member of members) {
             if (member === address) {
-              hasWithdrawn = await contract.hasWithdrawnRewards(address, groupIndex);
-              isStale = await contract.isStaleGroup(groupPubKey);
+              const hasWithdrawn = await contract.hasWithdrawnRewards(address, groupIndex);
+              const isStale = await contract.isStaleGroup(groupPubKey);
               if (isStale && !hasWithdrawn) {
-                rewards = await contract.getGroupMemberRewards(groupPubKey);
+                const rewards = await contract.getGroupMemberRewards(groupPubKey);
                 console.log({
                   earnings: rewards / 10 ** 18,
                   group_index: groupIndex
                 });
-                savedTotalRewards += rewards / 10 ** 18;
+                if (!stale) { // TODO: what does this do?
+                  setTotalRewards(totalRewards + rewards / 10 ** 18);
+                }
                 /*
                 NOTE 1: check that groupIndex isn't already included
                 because (at least on ropsten) you can have a single
@@ -219,10 +220,8 @@ function Rewards () {
                 }
               }
             }
-          });
+          }
         }
-        // TODO: it would be nice if this could be updated in real-time
-        setTotalRewards(savedTotalRewards);
         // 1. initialCost + (perLoopCost * n) < blockGasLimit
         // 2. perLoopCost * n < blockGasLimit - initialCost
         // 3. n = Math.floor((blockGasLimit - initialCost) / perLoopCost)
@@ -232,14 +231,17 @@ function Rewards () {
         const initialCost = 410270;
         // NOTE: subtracting 1 was necessary in testing on ropsten
         const maximum = Math.floor((blockGasLimit.toNumber() - initialCost) / perLoopCost) - 1;
-        console.log(`maximum: ${maximum}`);
-        setGroupIndicies(JSON.stringify(groupIndiciesArray.slice(0, maximum)));
+        if (!stale) { // TODO: what does this do?
+          setGroupIndicies(JSON.stringify(groupIndiciesArray.slice(0, maximum)));
+        }
       })();
       return () => {
         stale = true;
+        setGroupIndicies(undefined);
+        setTotalRewards(undefined);
       };
     }
-  }, [account, address, contractInitBlock, library, randomBeaconAddress, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
+  }, [account, address, chainId, contractInitBlock, library, randomBeaconAddress, totalRewards]); // ensures refresh if referential identity of library doesn't change across chainIds
 
   function handleAddressChange (event) {
     setAddress(event.target.value);
