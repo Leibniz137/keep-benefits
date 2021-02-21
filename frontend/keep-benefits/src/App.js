@@ -158,8 +158,6 @@ function Balance () {
 
 function Rewards () {
   const { account, library, chainId } = useWeb3React();
-  // if (chainId && chainId == )
-  console.log(chainId);
   var claimerAddress = CLAIMER_ADDRESS_MAINNET;
   var randomBeaconAddress = RANDOM_BEACON_MAINNET_ADDRESS;
   var contractInitBlock = RANDOM_BEACON_INIT_BLOCK_MAINNET;
@@ -168,6 +166,7 @@ function Rewards () {
     randomBeaconAddress = RANDOM_BEACON_ROPSTEN_ADDRESS;
     contractInitBlock = RANDOM_BEACON_INIT_BLOCK_ROPSTEN;
   }
+  // TODO: unsupported network warning if chainId not in (1,3)
 
   const [address, setAddress] = React.useState('');
   const [totalRewards, setTotalRewards] = React.useState('');
