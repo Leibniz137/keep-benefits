@@ -1,6 +1,3 @@
-/*
-Can't use 0.7.4 (current latest)
-*/
 pragma solidity 0.7.1;
 
 // SPDX-License-Identifier: GPL-3.0-or-later
@@ -46,9 +43,6 @@ contract BulkClaimer is Ownable {
 
     /*
     Claim beacon rewards in bulk for a given list of beacon groups
-
-    TODO: should this be a list of operators?
-          (for users running multiple operators)
     */
     function claimBeaconEarnings(uint256[] calldata groupIndicies, address operator) public {
         for (uint256 i = 0; i < groupIndicies.length; i++) {
