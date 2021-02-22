@@ -149,7 +149,7 @@ function Balance () {
   return (
     <div>
       <p>
-        Current Account Balance: {balance === null ? 'Error' : balance ? `Ξ${ethers.formatEther(balance)}` : ''}
+        Current Account Balance: {balance === null ? 'Error' : balance ? `Ξ${ethers.utils.formatEther(balance)}` : ''}
       </p>
     </div>
   );
