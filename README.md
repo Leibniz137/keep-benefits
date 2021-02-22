@@ -13,7 +13,16 @@ This means that the transaction fees associated with claiming each random beacon
 The purpose of the keep-benefits contract is to claim these earnings in bulk in a single transaction,
 saving you the overhead (and inconvenience) of claiming each reward individually with a distinct transaction.
 
-## Claiming earnings
+## Claiming earnings via GUI
+The current ipfs hash for the frontend is `QmWVvCy4PDMPV1MaXS4ES1S49XFSsgZ3XrA1uyqmrVuHWR`
+
+You can access it at the following gateways:
+- https://ipfs.io/ipfs/QmWVvCy4PDMPV1MaXS4ES1S49XFSsgZ3XrA1uyqmrVuHWR/
+- https://gateway.ipfs.io/ipfs/QmWVvCy4PDMPV1MaXS4ES1S49XFSsgZ3XrA1uyqmrVuHWR/
+- https://cloudflare-ipfs.com/ipfs/QmWVvCy4PDMPV1MaXS4ES1S49XFSsgZ3XrA1uyqmrVuHWR/
+
+## Claiming earnings via CLI
+NOTE: This is not guarenteed to work the first time, test first with ropsten!
 ```
 # use your operator address here
 export OPERATOR='0x...'
@@ -41,7 +50,10 @@ groups.
 | 1 | 410270 | 320996 |
 
 
-# Development
+# Frontend Development
+see: [frontend/keep-benefits/README.md](./frontend/keep-benefits/README.md)
+
+# Contract Development
 keep-benefits is developed using the [brownie framework](https://eth-brownie.readthedocs.io/en/stable/)
 
 
