@@ -13,6 +13,10 @@ This means that the transaction fees associated with claiming each random beacon
 The purpose of the keep-benefits contract is to claim these earnings in bulk in a single transaction,
 saving you the overhead (and inconvenience) of claiming each reward individually with a distinct transaction.
 
+The BulkClaimer contract is deployed to the following networks:
+- mainnet: https://etherscan.io/address/0xe35aab9f8d5bdf50c005743362768dd9cc883634
+- ropsten: https://ropsten.etherscan.io/address/0xBb19d16E1Ac4127D84E2F95fE7Dc7411C05b7d77
+
 ## Claiming earnings via GUI
 The current ipfs hash for the frontend is `QmWVvCy4PDMPV1MaXS4ES1S49XFSsgZ3XrA1uyqmrVuHWR`
 
