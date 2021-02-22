@@ -25,6 +25,13 @@ You can access it at the following gateways:
 - https://gateway.ipfs.io/ipfs/QmWVvCy4PDMPV1MaXS4ES1S49XFSsgZ3XrA1uyqmrVuHWR/
 - https://cloudflare-ipfs.com/ipfs/QmWVvCy4PDMPV1MaXS4ES1S49XFSsgZ3XrA1uyqmrVuHWR/
 
+You can also run the GUI locally with yarn:
+```
+cd frontend/keep-benefits
+yarn
+yarn start
+```
+
 ## Claiming earnings via CLI
 NOTE: This is not guarenteed to work the first time, test first with ropsten!
 ```
